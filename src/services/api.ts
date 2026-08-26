@@ -3,17 +3,24 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import {
+  installDemoApiAdapter,
+  isDemoMode,
+} from '../demo/mockApiAdapter';
+
+// Dedicated demo repo. Adapter below intercepts every request, so no production URL is used.
+const API_BASE_URL = 'http://demo.local/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true,
+  withCredentials: !isDemoMode,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+installDemoApiAdapter(api);
 
 export const getAccessToken = (): string | null => {
   return localStorage.getItem('accessToken');

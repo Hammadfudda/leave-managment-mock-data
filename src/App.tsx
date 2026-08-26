@@ -29,8 +29,6 @@ import MasterData from "./pages/MasterData";
 import MyTeam from "./pages/MyTeam";
 import Feedback from "./pages/Feedback";
 
-import SuperAdminPortal from "./super-admin/SuperAdminPortal";
-
 import type { Role } from "./types";
 
 function Protected({
@@ -106,7 +104,6 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* LOGIN */}
             <Route
               path="/"
               element={
@@ -116,13 +113,6 @@ export default function App() {
               }
             />
 
-            {/* SUPER ADMIN */}
-            <Route
-              path="/super-admin/*"
-              element={<SuperAdminPortal />}
-            />
-
-            {/* AUTHENTICATED AREA */}
             <Route
               element={
                 <Protected>
@@ -135,7 +125,6 @@ export default function App() {
                 element={<Dashboard />}
               />
 
-              {/* ADMIN DOES NOT HAVE EMPLOYEE PROFILE */}
               <Route
                 path="/profile"
                 element={
@@ -224,9 +213,7 @@ export default function App() {
               <Route
                 path="/employees"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <Employees />
                   </Protected>
                 }
@@ -235,9 +222,7 @@ export default function App() {
               <Route
                 path="/grades"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <Grades />
                   </Protected>
                 }
@@ -260,9 +245,7 @@ export default function App() {
               <Route
                 path="/policies"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <Policies />
                   </Protected>
                 }
@@ -271,9 +254,7 @@ export default function App() {
               <Route
                 path="/create"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <MasterData />
                   </Protected>
                 }
@@ -282,9 +263,7 @@ export default function App() {
               <Route
                 path="/feedback"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <Feedback />
                   </Protected>
                 }
@@ -293,16 +272,13 @@ export default function App() {
               <Route
                 path="/audit"
                 element={
-                  <Protected
-                    roles={["admin"]}
-                  >
+                  <Protected roles={["admin"]}>
                     <AuditLogs />
                   </Protected>
                 }
               />
             </Route>
 
-            {/* FALLBACK */}
             <Route
               path="*"
               element={
