@@ -340,11 +340,7 @@ export default function MasterData() {
         setEditingLeaveYear(
           false
         );
-
-        setLeaveYearChangeReason(
-          ''
-        );
-      } catch (
+} catch (
         error
       ) {
         /*
@@ -963,12 +959,7 @@ export default function MasterData() {
         setEditingLeaveYear(
           false
         );
-
-        setLeaveYearChangeReason(
-          ''
-        );
-
-        showMessage(
+showMessage(
           'success',
           'Start Year Date Updated',
           'Organization Start year date has been changed successfully.'
