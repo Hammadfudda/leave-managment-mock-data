@@ -80,9 +80,7 @@ export default function Layout() {
     void checkPasswordStatus();
   }, [checkPasswordStatus]);
 
-  if (
-    checkingPassword
-  ) {
+  if (checkingPassword) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 text-sm text-gray-500">
         Checking account security...
@@ -90,9 +88,7 @@ export default function Layout() {
     );
   }
 
-  if (
-    passwordCheckError
-  ) {
+  if (passwordCheckError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-white p-6 text-center shadow-sm">
@@ -114,9 +110,7 @@ export default function Layout() {
     );
   }
 
-  if (
-    mustChangePassword
-  ) {
+  if (mustChangePassword) {
     return (
       <ChangePasswordRequired />
     );
