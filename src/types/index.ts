@@ -26,6 +26,14 @@ export interface User {
   fullName: string;
   email: string;
   role: Role;
+
+  /*
+   * Demo-visible Division.
+   * roleLabel is kept because the production application uses this field
+   * for backward compatibility.
+   */
+  roleLabel?: string;
+
   designation: string;
   grade: string;
   department: string;
@@ -42,10 +50,6 @@ export interface User {
   passwordChangedFromDefault?: boolean;
 }
 
-/*
- * Grade represents employee level only.
- * Leave quota / carry-forward rules belong to LeavePolicy.
- */
 export interface Grade {
   id: string;
   name: string;
@@ -85,9 +89,26 @@ export interface ApprovalHistoryEntry {
   approverId: string;
   approverName: string;
   approverRole: string;
-  action: 'approved' | 'rejected' | 'cancelled';
+  action:
+    | 'approved'
+    | 'rejected'
+    | 'cancelled';
   comment?: string;
   actionDate: string;
+
+  isAdminOverride?: boolean;
+  isAdminStop?: boolean;
+  previousStatus?:
+    | 'approved'
+    | 'rejected'
+    | 'cancelled'
+    | 'pending';
+  newStatus?:
+    | 'approved'
+    | 'rejected'
+    | 'cancelled'
+    | 'pending';
+  effectiveReturnDate?: string;
 }
 
 export interface LeaveRequest {

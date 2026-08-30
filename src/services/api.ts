@@ -8,6 +8,10 @@ import {
   isDemoMode,
 } from '../demo/mockApiAdapter';
 
+import {
+  installFeatureParityFallback,
+} from '../demo/installFeatureParityFallback';
+
 // Dedicated demo repo. Adapter below intercepts every request, so no production URL is used.
 const API_BASE_URL = 'http://demo.local/api';
 
@@ -21,6 +25,13 @@ const api = axios.create({
 });
 
 installDemoApiAdapter(api);
+
+/*
+ * Adds only the client-feature endpoints that the older mock adapter does not
+ * yet simulate. It reads/writes the SAME sessionStorage demo state and never
+ * calls a real backend.
+ */
+installFeatureParityFallback(api);
 
 export const getAccessToken = (): string | null => {
   return localStorage.getItem('accessToken');

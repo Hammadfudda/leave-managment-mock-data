@@ -12,6 +12,12 @@ export interface BackendEmployee {
   email: string;
   role: Role;
 
+  /*
+   * Backward-compatible database field for Division.
+   * Portal Access remains separate in `role`.
+   */
+  roleLabel?: string;
+
   employeeId: string;
   cnic?: string;
   nationalId?: string;
@@ -66,7 +72,16 @@ export interface CreateEmployeePayload {
   email: string;
   cnic: string;
 
+  /*
+   * Portal Access: employee / manager only.
+   */
   role: 'employee' | 'manager';
+
+  /*
+   * Division selected from Master Data -> Divisions.
+   * Stored in roleLabel for backward database compatibility.
+   */
+  roleLabel: string;
 
   gradeId: string;
 
@@ -79,6 +94,12 @@ export interface CreateEmployeePayload {
   managerId?: string | null;
 
   canApproveOtherDepartments?: boolean;
+
+  /*
+   * Organization Leave Year Start shown in Create Employee.
+   * Backend validates this value against the organization setting.
+   */
+  leaveYearStart?: string;
 
   profilePhotoUrl?: string;
 }
@@ -175,6 +196,9 @@ export function mapEmployeeToUser(
 
     role:
       employee.role,
+
+    roleLabel:
+      employee.roleLabel || '',
 
     designation:
       employee.designation || '',
@@ -302,6 +326,27 @@ export async function updateEmployee(
     await api.patch<EmployeeResponse>(
       `/employees/${id}`,
       payload
+    );
+
+  return mapEmployeeToUser(
+    response.data.data
+  );
+}
+
+/*
+ * Division is deliberately updated through the existing small
+ * role-label endpoint so access-control role remains separate.
+ */
+export async function updateEmployeeRoleLabel(
+  id: string,
+  roleLabel: string
+): Promise<User> {
+  const response =
+    await api.patch<EmployeeResponse>(
+      `/employees/${id}/role-label`,
+      {
+        roleLabel,
+      }
     );
 
   return mapEmployeeToUser(
