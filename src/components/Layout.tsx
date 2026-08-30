@@ -6,6 +6,7 @@ import {
 
 import {
   Outlet,
+  useLocation,
 } from 'react-router-dom';
 
 import Sidebar from './Sidebar';
@@ -19,6 +20,8 @@ import api, {
 } from '../services/api';
 
 export default function Layout() {
+  const location = useLocation();
+
   const [
     sidebarOpen,
     setSidebarOpen,
@@ -60,10 +63,6 @@ export default function Layout() {
               true
           );
         } catch (error) {
-          /*
-           * Fail closed: if mandatory-password status cannot be verified,
-           * do not expose the application until the backend check succeeds.
-           */
           setPasswordCheckError(
             getApiErrorMessage(
               error,
@@ -145,7 +144,10 @@ export default function Layout() {
           </div>
         </main>
       </div>
-      <SmartCsvImportEnhancer />
+
+      {location.pathname === '/employees' && (
+        <SmartCsvImportEnhancer />
+      )}
     </div>
   );
 }
