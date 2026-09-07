@@ -725,6 +725,37 @@ function normalize(
     .toLowerCase();
 }
 
+function expectedLeaveYearStart(
+  state: Row
+) {
+  const settings =
+    state.organizationSettings ||
+    {};
+
+  if (
+    typeof settings.leaveYearStart ===
+      'string' &&
+    /^\d{2}-\d{2}$/.test(
+      settings.leaveYearStart
+    )
+  ) {
+    return settings.leaveYearStart;
+  }
+
+  const day =
+    Number(
+      settings.leaveYearStartDay ||
+      1
+    );
+  const month =
+    Number(
+      settings.leaveYearStartMonth ||
+      1
+    );
+
+  return `${String(day).padStart(2, '0')}-${String(month).padStart(2, '0')}`;
+}
+
 function previewFromRows(
   state: Row,
   rows:
@@ -790,6 +821,11 @@ function previewFromRows(
       )
     );
 
+  const leaveYearStart =
+    expectedLeaveYearStart(
+      state
+    );
+
   return {
     rows:
       rows.map(
@@ -820,10 +856,10 @@ function previewFromRows(
           if (
             row.leaveYearStart &&
             row.leaveYearStart !==
-              '01-01'
+              leaveYearStart
           ) {
             errors.push(
-              `Leave Year Start "${row.leaveYearStart}" does not match 01-01.`
+              `Leave Year Start "${row.leaveYearStart}" does not match ${leaveYearStart}.`
             );
           }
 
@@ -1033,6 +1069,11 @@ function metadataPreview(
       number
     >();
 
+  const leaveYearStart =
+    expectedLeaveYearStart(
+      state
+    );
+
   rows.forEach(
     (
       row,
@@ -1058,16 +1099,16 @@ function metadataPreview(
         errors.push({
           rowNumber,
           message:
-            'Leave Year Start is required and must match 01-01.',
+            `Leave Year Start is required and must match ${leaveYearStart}.`,
         });
       } else if (
         row.leaveYearStart !==
-        '01-01'
+        leaveYearStart
       ) {
         errors.push({
           rowNumber,
           message:
-            `Leave Year Start "${row.leaveYearStart}" does not match 01-01.`,
+            `Leave Year Start "${row.leaveYearStart}" does not match ${leaveYearStart}.`,
         });
       }
 
@@ -1438,11 +1479,6 @@ export function installFeatureParityFallback(
     () =>
       upgradeState();
 
-  /*
-   * Layout always calls /employees/me first.
-   * The normal demo adapter seeds state, then this response hook upgrades it
-   * before the feature pages render.
-   */
   api.interceptors.response.use(
     (
       response
@@ -1523,9 +1559,6 @@ export function installFeatureParityFallback(
       const state =
         loadState();
 
-      /*
-       * Organization Leave Year Start.
-       */
       if (
         path ===
           '/organization-settings'
@@ -1606,9 +1639,6 @@ export function installFeatureParityFallback(
         );
       }
 
-      /*
-       * Historical/current yearly report.
-       */
       if (
         path ===
           '/audit-logs/yearly'
@@ -1717,9 +1747,6 @@ export function installFeatureParityFallback(
         );
       }
 
-      /*
-       * Admin finalized-decision demo actions.
-       */
       const overrideMatch =
         path.match(
           /^\/leave-requests\/([^/]+)\/admin-override$/
@@ -1727,8 +1754,10 @@ export function installFeatureParityFallback(
 
       if (
         overrideMatch &&
-        verb ===
-          'post'
+        (
+          verb === 'patch' ||
+          verb === 'post'
+        )
       ) {
         let body:
           Row =
@@ -1818,8 +1847,10 @@ export function installFeatureParityFallback(
 
       if (
         stopMatch &&
-        verb ===
-          'post'
+        (
+          verb === 'patch' ||
+          verb === 'post'
+        )
       ) {
         let body:
           Row =
@@ -1921,9 +1952,6 @@ export function installFeatureParityFallback(
         );
       }
 
-      /*
-       * Employee Division compatibility endpoint.
-       */
       const roleLabelMatch =
         path.match(
           /^\/employees\/([^/]+)\/role-label$/
@@ -1988,10 +2016,6 @@ export function installFeatureParityFallback(
         );
       }
 
-      /*
-       * Smart CSV demo.
-       * This is deliberately simulated in sessionStorage only.
-       */
       if (
         path ===
           '/employees/import-smart/preview' &&

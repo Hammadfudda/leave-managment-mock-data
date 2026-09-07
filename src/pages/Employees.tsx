@@ -435,11 +435,6 @@ export default function Employees() {
 
   const loadHierarchyAndSettings =
     async () => {
-      /*
-       * Division / Department must never disappear just because the optional
-       * Organization settings record is missing for a legacy Admin account.
-       * Load hierarchy first, then load Leave Year settings independently.
-       */
       const [
         departmentResponse,
         divisionResponse,
@@ -586,18 +581,11 @@ export default function Employees() {
               return true;
             }
 
-            /*
-             * Legacy unassigned Department remains selectable so old
-             * production records do not break. Backend safely links it
-             * to the selected Division on a valid employee create.
-             */
-            return (
+            return Boolean(
+              editingUser &&
               !department.divisionName &&
-              (
-                editingUser?.department ===
-                  department.name ||
-                !editingUser
-              )
+              editingUser.department ===
+                department.name
             );
           }
         ),
@@ -709,10 +697,6 @@ export default function Employees() {
       ]
     );
 
-  /*
-   * Existing manager rule is preserved and tightened only by Division:
-   * active Managers from the selected Department and selected Division.
-   */
   const availableManagers =
     useMemo(
       () => {
@@ -725,24 +709,42 @@ export default function Employees() {
         return users.filter(
           (
             candidate
-          ) =>
-            candidate.role ===
-              'manager' &&
-            candidate.status ===
-              'active' &&
-            candidate.department ===
-              form.department &&
-            (
+          ) => {
+            if (
+              candidate.role !==
+                'manager' ||
+              candidate.status !==
+                'active' ||
+              candidate.department !==
+                form.department ||
+              candidate.id ===
+                editingUser?.id
+            ) {
+              return false;
+            }
+
+            const candidateDivision =
+              candidate.roleLabel ||
+              departmentRows.find(
+                (
+                  department
+                ) =>
+                  department.name ===
+                  candidate.department
+              )?.divisionName ||
+              '';
+
+            return (
               !form.roleLabel ||
-              candidate.roleLabel ===
+              candidateDivision ===
                 form.roleLabel
-            ) &&
-            candidate.id !==
-              editingUser?.id
+            );
+          }
         );
       },
       [
         users,
+        departmentRows,
         form.department,
         form.roleLabel,
         editingUser?.id,
@@ -1074,10 +1076,6 @@ export default function Employees() {
             updatePayload
           );
 
-          /*
-           * Existing dedicated endpoint is retained; only user-facing
-           * terminology changes from Role to Division.
-           */
           await updateEmployeeRoleLabel(
             editingUser.id,
             form.roleLabel
@@ -1096,11 +1094,6 @@ export default function Employees() {
             );
           }
 
-          /*
-           * The backend balance endpoint calls syncPolicyBalancesForUser().
-           * Trigger it immediately when Grade or DOJ changed so prorated
-           * Granted values are refreshed now, not only on a later balance read.
-           */
           if (
             form.grade !==
               editingUser.grade ||
@@ -1723,8 +1716,6 @@ export default function Employees() {
             'designation'
           ? 'Add Designation'
           : 'Add Department';
-
-
 
   return (
     <div className="space-y-6">
@@ -3680,8 +3671,7 @@ function EmployeeLeaveBalanceSummary({
           used: number;
           remaining: number;
         }
-      >
-    >({});
+      >>({});
 
   const [
     loading,

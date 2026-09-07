@@ -271,10 +271,6 @@ function employeeFromPayload(state: DemoState, body: JsonRecord, existing?: Json
   };
 }
 
-function leaveIdFromPath(path: string) {
-  return path.split('/')[2] || '';
-}
-
 function workingDays(start: string, end: string) {
   const s = new Date(`${start}T00:00:00`);
   const e = new Date(`${end}T00:00:00`);
@@ -294,7 +290,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
   const method = methodOf(config);
   const body = parseBody(config);
 
-  // Authentication
   if (path === '/auth/login' && method === 'post') {
     const email = String(body.email || '').trim().toLowerCase();
     const passwords: Record<string, string> = {
@@ -323,7 +318,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     return makeResponse(config, { success: true, data: currentUser(state) });
   }
 
-  // Employees
   if (path === '/employees' && method === 'get') {
     return makeResponse(config, { success: true, data: state.users.filter((u) => u.status !== 'pending_deletion'), total: state.users.length, page: 1, limit: 500, totalPages: 1 });
   }
@@ -403,7 +397,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     return makeResponse(config, { success: Boolean(employee), data: employee });
   }
 
-  // Master data
   const masters: Record<string, keyof DemoState> = {
     '/grades': 'grades', '/departments': 'departments', '/designations': 'designations', '/roles': 'roles',
   };
@@ -434,7 +427,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     }
   }
 
-  // Leave policies
   if (path === '/leave-policies' && method === 'get') {
     return makeResponse(config, { success: true, data: state.leavePolicies });
   }
@@ -456,7 +448,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     return makeResponse(config, { success: true });
   }
 
-  // Leave requests and balances
   if (path === '/leave-requests' && method === 'get') {
     return makeResponse(config, { success: true, data: state.leaveRequests, total: state.leaveRequests.length });
   }
@@ -537,7 +528,6 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     return makeResponse(config, { success: true, data: stop }, 201);
   }
 
-  // Notifications
   if (path === '/notifications' && method === 'get') {
     const user = currentUser(state);
     const data = state.notifications.filter((n) => !n.userId || n.userId === user._id);
@@ -555,12 +545,10 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     saveState(state); return makeResponse(config, { success: Boolean(notification), data: notification });
   }
 
-  // Audit logs
   if (path === '/audit-logs' && method === 'get') {
     return makeResponse(config, { success: true, data: state.auditLogs });
   }
 
-  // Feedback
   if (path === '/feedback' && method === 'get') {
     return makeResponse(config, { success: true, data: state.feedback });
   }
@@ -571,12 +559,10 @@ const demoAxiosAdapter: AxiosAdapter = async (config) => {
     return makeResponse(config, { success: true, data: item, emailSent: false }, 201);
   }
 
-  // Profile/photo and any harmless UI-only endpoint: succeed without external side effects.
   if (path.includes('/profile-photo') && ['post', 'patch', 'delete'].includes(method)) {
     return makeResponse(config, { success: true, data: currentUser(state), message: 'Demo profile photo action simulated.' });
   }
 
-  // Safe fallback: GET -> empty data, writes -> echo body. No network request ever leaves the browser.
   if (method === 'get') {
     return makeResponse(config, { success: true, data: [] });
   }
